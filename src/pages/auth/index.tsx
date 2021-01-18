@@ -1,14 +1,14 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import Button from '@material-ui/core/Button'
+import { appConfig } from '@strips/utils/appConfig'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { ParsedUrlQuery } from 'querystring'
 import React, { Fragment, useEffect } from 'react'
-import { appConfig } from '@strips/utils/appConfig'
+import { getRedirectUrl, getOriginPath } from './utils'
 
-interface AuthenticatePageProps {}
+interface AuthPageProps {}
 
-export default function AuthenticatePage(props: AuthenticatePageProps) {
+export default function AuthPage(props: AuthPageProps) {
   const auth0 = useAuth0()
   const router = useRouter()
   useEffect(() => {
@@ -20,7 +20,8 @@ export default function AuthenticatePage(props: AuthenticatePageProps) {
       router.replace(targetPath)
     } else {
       auth0.loginWithRedirect({
-        redirectUri: getLoginRedirectUri({
+        redirectUri: getRedirectUrl({
+          baseUrl: appConfig.auth0.redirectUrl,
           routerQuery: router.query,
         }),
       })
@@ -29,7 +30,7 @@ export default function AuthenticatePage(props: AuthenticatePageProps) {
   return (
     <Fragment>
       <Head>
-        <title>Authenticate - strips</title>
+        <title>Auth - strips</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {auth0.error ? (
@@ -38,7 +39,8 @@ export default function AuthenticatePage(props: AuthenticatePageProps) {
           <Button
             onClick={() => {
               auth0.loginWithRedirect({
-                redirectUri: getLoginRedirectUri({
+                redirectUri: getRedirectUrl({
+                  baseUrl: appConfig.auth0.redirectUrl,
                   routerQuery: router.query,
                 }),
               })
@@ -50,29 +52,4 @@ export default function AuthenticatePage(props: AuthenticatePageProps) {
       ) : null}
     </Fragment>
   )
-}
-
-export async function getStaticProps() {
-  return { props: {} }
-}
-
-interface GetLoginRedirectUriApi
-  extends Pick<GetOriginPathApi, 'routerQuery'> {}
-
-const getLoginRedirectUri = (api: GetLoginRedirectUriApi) => {
-  const { routerQuery } = api
-  const originPath = getOriginPath({ routerQuery })
-  const queryString = new URLSearchParams({ originPath }).toString()
-  return `${appConfig.auth0.redirectUri}?${queryString}`
-}
-
-interface GetOriginPathApi {
-  routerQuery: ParsedUrlQuery
-}
-
-const getOriginPath = (api: GetOriginPathApi) => {
-  const { routerQuery } = api
-  return typeof routerQuery.originPath === 'string'
-    ? routerQuery.originPath
-    : '/'
 }

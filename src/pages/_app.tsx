@@ -6,7 +6,7 @@ export default function App({ Component, pageProps }) {
     <Auth0Provider
       domain={appConfig.auth0.domain}
       clientId={appConfig.auth0.clientId}
-      redirectUri={appConfig.auth0.redirectUri}
+      redirectUri={appConfig.auth0.redirectUrl}
     >
       <Component {...pageProps} />
     </Auth0Provider>
